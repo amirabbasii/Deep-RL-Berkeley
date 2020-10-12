@@ -106,8 +106,8 @@ class MLPPolicySL(MLPPolicy):
             self, observations, actions,
             adv_n=None, acs_labels_na=None, qvals=None
     ):
-       y_pred=self.forward(observations)
-       loss = self.loss(y_pred, actions)
+        y_pred=self.forward(observations)
+        loss = self.loss(y_pred, actions)
 
         optimizer.zero_grad()
         loss.backward()
