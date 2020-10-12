@@ -48,12 +48,12 @@ def build_mlp(
     # TODO: return a MLP. This should be an instance of nn.Module
     # Note: nn.Sequential is an instance of nn.Module.
     network = nn.Sequential()
-    act={"tanh":nn.Tanh,"relu":nn.ReLU}
+
     network.add_module("input",nn.Linear(input_size,size))
     for i in range(n_layers):
         network.add_module('hidden_'+str(i), nn.Linear(size,size))
         if activation!="Linear":
-            layer=act[activation]
+            layer=_str_to_activation[activation]
             network.add_module('hidden_'+str(i), layer(size,size))
     network.add_module("output",nn.Linear(size,output_size))
     
