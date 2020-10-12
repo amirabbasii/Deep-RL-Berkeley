@@ -109,9 +109,9 @@ class MLPPolicySL(MLPPolicy):
        y_pred=self.forward(observations)
        loss = self.loss(y_pred, actions)
 
-       optimizer.zero_grad()
-       loss.backward()
-       optimizer.step()
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
         
         
         return {
