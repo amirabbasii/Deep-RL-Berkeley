@@ -51,11 +51,9 @@ def build_mlp(
 
     network.add_module("input",nn.Linear(input_size,size))
     for i in range(n_layers):
-        network.add_module('hidden_'+str(i), nn.Linear(size,size))
-        if activation!="Linear":
-            layer=_str_to_activation[activation]
-            network.add_module('hidden_'+str(i), layer(size,size))
-    network.add_module("output",nn.Linear(size,output_size))
+        layer=_str_to_activation[activation]
+        network.add_module('hidden_'+str(i), layer(size,size))
+    network.add_module("output",output_activation(size,output_size))
     
 device = None
 
