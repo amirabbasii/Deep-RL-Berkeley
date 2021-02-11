@@ -101,7 +101,7 @@ class RL_Trainer(object):
                 self.log_metrics = True
             else:
                 self.log_metrics = False
-
+            
             # collect trajectories, to be used for training
             training_returns = self.collect_training_trajectories(
                 itr,
@@ -109,22 +109,24 @@ class RL_Trainer(object):
                 collect_policy,
                 self.params['batch_size']
             )  # HW1: implement this function below
+          
             paths, envsteps_this_batch, train_video_paths = training_returns
             self.total_envsteps += envsteps_this_batch
-
+            
             # relabel the collected obs with actions from a provided expert policy
             if relabel_with_expert and itr>=start_relabel_with_expert:
                 paths = self.do_relabel_with_expert(expert_policy, paths)  # HW1: implement this function below
 
             # add collected data to replay buffer
             self.agent.add_to_replay_buffer(paths)
-
+            
             # train agent (using sampled data from replay buffer)
             training_logs = self.train_agent()  # HW1: implement this function below
-
+            
+            
             # log/save
             if self.log_video or self.log_metrics:
-
+                
                 # perform logging
                 print('\nBeginning logging procedure...')
                 self.perform_logging(
@@ -166,7 +168,7 @@ class RL_Trainer(object):
         # HINT1: use sample_trajectories from utils
         # HINT2: you want each of these collected rollouts to be of length self.params['ep_len']
         print("\nCollecting data to be used for training...")
-        paths, envsteps_this_batch = utils.sample_trajectory(self.env,collect_policy,self.params['ep_len'])
+        paths, envsteps_this_batch = utils.sample_trajectories(env=self.env,policy=collect_policy,min_timesteps_per_batch=batch_size,max_path_length=self.params['ep_len'])
 
         # collect more rollouts with the same policy, to be saved as videos in tensorboard
         # note: here, we collect MAX_NVIDEO rollouts, each of length MAX_VIDEO_LEN
@@ -188,11 +190,11 @@ class RL_Trainer(object):
             # HINT1: use the agent's sample function
             # HINT2: how much data = self.params['train_batch_size']
             ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = self.agent.sample(self.params["train_batch_size"])
-
+            
             # TODO use the sampled data to train an agent
             # HINT: use the agent's train function
             # HINT: keep the agent's training log for debugging
-            train_log = self.train(ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch)
+            train_log = self.agent.train(ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch)
             all_logs.append(train_log)
         return all_logs
 
@@ -203,7 +205,9 @@ class RL_Trainer(object):
         # HINT: query the policy (using the get_action function) with 
         # and replace paths[i]["action"] with these expert labels
         for i in range(len(paths)):
-            paths[i]["action"]=expert_ploicy.get_action(paths[i]["observation"])
+           
+            paths[i]["action"]=np.array(expert_policy.get_action(paths[i]["observation"]))
+        
         return paths
 
     ####################################
@@ -214,7 +218,7 @@ class RL_Trainer(object):
         # collect eval trajectories, for logging
         print("\nCollecting data for eval...")
         eval_paths, eval_envsteps_this_batch = utils.sample_trajectories(self.env, eval_policy, self.params['eval_batch_size'], self.params['ep_len'])
-
+        
         # save eval rollouts as videos in tensorboard event file
         if self.log_video and train_video_paths != None:
             print('\nCollecting video rollouts eval')
@@ -226,7 +230,7 @@ class RL_Trainer(object):
                                             video_title='train_rollouts')
             self.logger.log_paths_as_videos(eval_video_paths, itr, fps=self.fps,max_videos_to_save=MAX_NVIDEO,
                                              video_title='eval_rollouts')
-
+        
         # save eval metrics
         if self.log_metrics:
             # returns, for logging

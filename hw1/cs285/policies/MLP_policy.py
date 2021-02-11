@@ -75,12 +75,13 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
     ##################################
 
     def get_action(self, obs: np.ndarray) -> np.ndarray:
+        obs= torch.FloatTensor(obs)
         if len(obs.shape) > 1:
             observation = obs
         else:
             observation = obs[None]
 
-        return self.forward(observation)
+        return self.forward(observation).detach().numpy()
 
     # update/train this policy
     def update(self, observations, actions, **kwargs):
@@ -89,7 +90,9 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
     
     def forward(self, observation: torch.FloatTensor) -> Any:
         model=self.logits_na if self.discrete else self.mean_net
-        return model(observations)
+        obs= torch.FloatTensor(observation)
+
+        return model(obs)
             
             
 
@@ -107,11 +110,12 @@ class MLPPolicySL(MLPPolicy):
             adv_n=None, acs_labels_na=None, qvals=None
     ):
         y_pred=self.forward(observations)
-        loss = self.loss(y_pred, actions)
 
-        optimizer.zero_grad()
+        loss = self.loss(y_pred, torch.tensor(actions))
+
+        self.optimizer.zero_grad()
         loss.backward()
-        optimizer.step()
+        self.optimizer.step()
         
         
         return {

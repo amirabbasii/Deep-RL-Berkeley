@@ -27,10 +27,10 @@ class Logger:
         self._summ_writer.add_video('{}'.format(name), video_frames, step, fps=fps)
 
     def log_paths_as_videos(self, paths, step, max_videos_to_save=2, fps=10, video_title='video'):
-
+        print(len(paths[0]['image_obs']))
         # reshape the rollouts
         videos = [np.transpose(p['image_obs'], [0, 3, 1, 2]) for p in paths]
-
+        
         # max rollout length
         max_videos_to_save = np.min([max_videos_to_save, len(videos)])
         max_length = videos[0].shape[0]

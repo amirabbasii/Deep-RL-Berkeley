@@ -29,7 +29,7 @@ class LoadedGaussianPolicy(BasePolicy, nn.Module):
     def __init__(self, filename, **kwargs):
         super().__init__(**kwargs)
 
-        with open(filename, 'rb') as f:
+        with open("/content/cs285_f2020/homework_fall2020/hw1/cs285/policies/experts/Ant.pkl", 'rb') as f:
             data = pickle.loads(f.read())
 
         self.nonlin_type = data['nonlin_type']

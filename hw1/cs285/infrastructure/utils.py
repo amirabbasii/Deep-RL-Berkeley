@@ -16,6 +16,7 @@ def sample_trajectory(env, policy, max_path_length, render=False, render_mode=('
 
         # render image of the simulated env
         if render:
+      
             if 'rgb_array' in render_mode:
                 if hasattr(env, 'sim'):
                     image_obs.append(env.sim.render(camera_name='track', height=500, width=500)[::-1])
@@ -26,28 +27,28 @@ def sample_trajectory(env, policy, max_path_length, render=False, render_mode=('
                 time.sleep(env.model.opt.timestep)
 
         # use the most recent ob to decide what to do
+        
         obs.append(ob)
-        obs=np.array(obs)
         ac = policy.get_action(obs) # HINT: query the policy's get_action function
         ac = ac[0]
         acs.append(ac)
-
+        
         # take that action and record results
         ob, rew, done, _ = env.step(ac)
-
+        
         # record result of taking that action
         steps += 1
         next_obs.append(ob)
         rewards.append(rew)
-
+        
         # TODO end the rollout if the rollout ended
         # HINT: rollout can end due to done, or due to max_path_length
-        rollout_done = done # HINT: this is either 0 or 1
+        rollout_done = done or (steps >= max_path_length)# HINT: this is either 0 or 1
         terminals.append(rollout_done)
 
         if rollout_done:
             break
-
+    
     return Path(obs, image_obs, acs, rewards, next_obs, terminals)
 
 def sample_trajectories(env, policy, min_timesteps_per_batch, max_path_length, render=False, render_mode=('rgb_array')):
@@ -61,8 +62,8 @@ def sample_trajectories(env, policy, min_timesteps_per_batch, max_path_length, r
     timesteps_this_batch = 0
     paths = []
     while timesteps_this_batch < min_timesteps_per_batch:
-        path=sample_trajectories(env, policy, max_path_length)
-        paths.appned(path)
+        path=sample_trajectory(env, policy, max_path_length)
+        paths.append(path)
         timesteps_this_batch+=get_pathlength(path)
 
     return paths, timesteps_this_batch
@@ -75,10 +76,11 @@ def sample_n_trajectories(env, policy, ntraj, max_path_length, render=False, ren
         Hint1: use sample_trajectory to get each path (i.e. rollout) that goes into paths
     """
     paths = []
+    
     for _ in range(ntraj):
-        path=sample_trajectories(env, policy, max_path_length)
-        paths.appned(path)
-   
+        path=sample_trajectory(env, policy, max_path_length)
+        paths.append(path)
+    
     return paths
 
 ############################################
