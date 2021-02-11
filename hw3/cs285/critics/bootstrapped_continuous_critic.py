@@ -85,5 +85,7 @@ class BootstrappedContinuousCritic(nn.Module, BaseCritic):
         #       to 0) when a terminal state is reached
         # HINT: make sure to squeeze the output of the critic_network to ensure
         #       that its dimensions match the reward
-
+        v_p=self.critic_network(ob_no)
+        target=reward_n+self.gamma*v_p*(1-terminal_n)
+        
         return loss.item()
